@@ -1,0 +1,3 @@
+class ReminderApi {
+  // Reminder API
+}

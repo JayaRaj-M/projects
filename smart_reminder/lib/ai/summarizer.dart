@@ -1,0 +1,3 @@
+class Summarizer {
+  // Summarization logic
+}

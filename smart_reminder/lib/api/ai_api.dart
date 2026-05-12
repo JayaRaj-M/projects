@@ -1,0 +1,3 @@
+class AiApi {
+  // AI API
+}
