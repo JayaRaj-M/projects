@@ -1,3 +1,0 @@
-class ReminderApi {
-  // Reminder API
-}

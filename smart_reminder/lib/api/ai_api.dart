@@ -1,3 +1,0 @@
-class AiApi {
-  // AI API
-}

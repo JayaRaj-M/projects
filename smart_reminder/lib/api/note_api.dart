@@ -1,3 +1,0 @@
-class NoteApi {
-  // Note API
-}

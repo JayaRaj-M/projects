@@ -1,3 +1,0 @@
-class NotificationHelper {
-  // Notification helper
-}

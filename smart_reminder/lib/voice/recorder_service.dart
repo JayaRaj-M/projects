@@ -1,3 +1,0 @@
-class RecorderService {
-  // Recorder service
-}
