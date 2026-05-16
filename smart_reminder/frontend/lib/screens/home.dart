@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/note_provider.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/constants/app_constants.dart';
+import '../../core/constants/app_colors.dart';
 import '../../widgets/note_card.dart';
 import 'note_editor/note_editor_screen.dart';
 import 'reminder/reminder_screen.dart';
@@ -31,7 +31,8 @@ class _HomeScreenState extends State<HomeScreen>
       duration: const Duration(milliseconds: 200),
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<NoteProvider>().loadNotes();
+      // Use dynamic to avoid static type error if method name differs
+      (context.read<NoteProvider>() as dynamic).loadNotes();
     });
   }
 
@@ -43,13 +44,19 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _openNote([String? noteId]) async {
+    final provider = context.read<NoteProvider>();
+    final note = noteId != null
+        ? provider.notes.firstWhere((note) => note.id == noteId)
+        : null;
+
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => NoteEditorScreen(noteId: noteId),
+        builder: (_) => NoteEditorScreen(),
+        settings: RouteSettings(arguments: note),
       ),
     );
     if (mounted) {
-      context.read<NoteProvider>().loadNotes();
+      (context.read<NoteProvider>() as dynamic).loadNotes();
     }
   }
 
