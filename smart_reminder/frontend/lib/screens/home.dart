@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen>
 
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => NoteEditorScreen(),
+        builder: (_) => const NoteEditorScreen(),
         settings: RouteSettings(arguments: note),
       ),
     );
@@ -203,9 +203,9 @@ class _NotesViewState extends State<_NotesView> {
             // Pinned section
             else ...[
               if (provider.pinnedNotes.isNotEmpty) ...[
-                SliverToBoxAdapter(
+                const SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                    padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
                     child: _SectionHeader(
                       icon: Icons.push_pin_rounded,
                       label: 'Pinned',
@@ -580,7 +580,7 @@ class _BottomSheetOption extends StatelessWidget {
         ),
       ),
       trailing: isSelected
-          ? Icon(Icons.check_rounded, color: AppColors.primary, size: 18)
+          ? const Icon(Icons.check_rounded, color: AppColors.primary, size: 18)
           : null,
       onTap: onTap,
     );
