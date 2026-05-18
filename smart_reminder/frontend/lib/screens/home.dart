@@ -104,6 +104,9 @@ class _NotesView extends StatefulWidget {
 
 class _NotesViewState extends State<_NotesView> {
   final TextEditingController _searchCtrl = TextEditingController();
+  String _searchQuery = '';
+  String _viewMode = AppConstants.viewGrid;
+  String _sortBy = AppConstants.sortByDate;
 
   @override
   void dispose() {
@@ -111,10 +114,31 @@ class _NotesViewState extends State<_NotesView> {
     super.dispose();
   }
 
+  List _applySort(List notes) {
+    final sorted = [...notes];
+    if (_sortBy == AppConstants.sortByTitle) {
+      sorted.sort(
+          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+    } else {
+      sorted.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    }
+
+    final pinned = sorted.where((n) => n.isPinned).toList();
+    final unpinned = sorted.where((n) => !n.isPinned).toList();
+    return [...pinned, ...unpinned];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<NoteProvider>(
       builder: (context, provider, _) {
+        final filteredNotes = _searchQuery.isEmpty
+            ? provider.notes
+            : provider.search(_searchQuery);
+        final sortedNotes = _applySort(filteredNotes);
+        final pinnedNotes = sortedNotes.where((n) => n.isPinned).toList();
+        final unpinnedNotes = sortedNotes.where((n) => !n.isPinned).toList();
+
         return CustomScrollView(
           slivers: [
             // Header
@@ -146,23 +170,23 @@ class _NotesViewState extends State<_NotesView> {
                                   ),
                             ),
                             Text(
-                              '${provider.noteCount} notes',
+                              '${filteredNotes.length} notes',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
-                                  ?.copyWith(color: AppColors.textMuted),
+                                  ?.copyWith(color: AppColors.textSecondary),
                             ),
                           ],
                         ),
                         const Spacer(),
                         _ViewToggle(
-                          viewMode: provider.viewMode,
-                          onToggle: provider.setViewMode,
+                          viewMode: _viewMode,
+                          onToggle: (mode) => setState(() => _viewMode = mode),
                         ),
                         const SizedBox(width: 8),
                         _SortButton(
-                          sortBy: provider.sortBy,
-                          onSelect: provider.setSortBy,
+                          sortBy: _sortBy,
+                          onSelect: (value) => setState(() => _sortBy = value),
                         ),
                       ],
                     ),
@@ -172,7 +196,7 @@ class _NotesViewState extends State<_NotesView> {
                     _SearchBar(
                       controller: _searchCtrl,
                       onChanged: (q) {
-                        provider.setSearchQuery(q);
+                        setState(() => _searchQuery = q);
                       },
                     ),
                     const SizedBox(height: 20),
@@ -181,28 +205,14 @@ class _NotesViewState extends State<_NotesView> {
               ),
             ),
 
-            // Loading
-            if (provider.isLoading)
-              const SliverToBoxAdapter(
-                child: Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(48),
-                    child: CircularProgressIndicator(
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-              )
-            // Empty state
-            else if (provider.notes.isEmpty)
+            if (filteredNotes.isEmpty)
               SliverToBoxAdapter(
                 child: _EmptyState(
-                  hasSearch: provider.searchQuery.isNotEmpty,
+                  hasSearch: _searchQuery.isNotEmpty,
                 ),
               )
-            // Pinned section
             else ...[
-              if (provider.pinnedNotes.isNotEmpty) ...[
+              if (pinnedNotes.isNotEmpty) ...[
                 const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
@@ -215,13 +225,13 @@ class _NotesViewState extends State<_NotesView> {
                 ),
                 _buildNoteGrid(
                   context,
-                  provider.pinnedNotes,
-                  provider.viewMode,
+                  pinnedNotes,
+                  _viewMode,
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 20)),
               ],
-              if (provider.unpinnedNotes.isNotEmpty) ...[
-                if (provider.pinnedNotes.isNotEmpty)
+              if (unpinnedNotes.isNotEmpty) ...[
+                if (pinnedNotes.isNotEmpty)
                   const SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
@@ -233,8 +243,8 @@ class _NotesViewState extends State<_NotesView> {
                   ),
                 _buildNoteGrid(
                   context,
-                  provider.unpinnedNotes,
-                  provider.viewMode,
+                  unpinnedNotes,
+                  _viewMode,
                 ),
               ],
             ],
